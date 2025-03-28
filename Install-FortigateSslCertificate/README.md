@@ -25,7 +25,8 @@ Run these PowerShell commands. Replace `firewall.hostname.or.ip` with correct IP
 
 ```powershell
 # Install required modules
-Install-Module -Name Posh-SSH,PSVault -Scope CurrentUser
+Install-Module -Name Posh-SSH -Scope CurrentUser
+Start-BitsTransfer https://raw.githubusercontent.com/gildas/posh-vault/master/Install.ps1 $env:TEMP ; & $env:TEMP\Install.ps1
 
 # Download script
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/thordreier/FortiGatePowerShellScripts/main/Install-FortigateSslCertificate/Install-FortigateSslCertificate.ps1 -OutFile C:\scripts\Install-FortigateSslCertificate.ps1
@@ -34,13 +35,13 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/thordreier/FortiGatePow
 New-Item -ItemType Directory -Path C:\Certificates
 
 # Set Windows Vault password for FortiGate (admin/...)
-Set-VaultCredential -Name firewall.hostname.or.ip
+Set-VaultCredential -Resource https://firewall.hostname.or.ip -User admin -Password 's3cr3t'
 
 # Window Vault can be accessed in Control Panel with
 control /name Microsoft.CredentialManager
 
 # Test that FortiGate can be accessed through SSH with the credentials stored in Windows Vault
-$credential = Get-VaultCredential -Name firewall.hostname.or.ip
+$credential = Get-VaultCredential -Resource https://firewall.hostname.or.ip -User admin
 $session = New-SSHSession -ComputerName firewall.hostname.or.ip -Credential $credential -Port 22
 Invoke-SSHCommand -Command 'get system status' -SSHSession $session | select -ExpandProperty Output
 Remove-SSHSession -SSHSession $session
